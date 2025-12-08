@@ -19,37 +19,44 @@ const cardData = [
   { id: 9, mainLocation: "West Gate", location: "Oke-Ijebu Layout", price: "₦135,000", distance: "7 mins" },
 ];
 
-
 const LocationPage = () => {
-const params = useParams();
+  const params = useParams();
 
-  // Convert URL param back to original format
-  const mainLocation = (params?.mainLocation ?? "")
-  .split("-")
-  .map(s => s.charAt(0).toUpperCase() + s.slice(1))
-  .join(" ");
+  // Ensure the param is always a string
+  const rawParam = params?.mainLocation;
+  const mainLocationParam = Array.isArray(rawParam) ? rawParam[0] : rawParam ?? "";
 
+  // Format from "south-gate" → "South Gate"
+  const mainLocation = mainLocationParam
+    .split("-")
+    .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(" ");
+
+  // Filter houses by location
   const houses = cardData.filter(h => h.mainLocation === mainLocation);
 
   return (
     <Container>
-    <div className="pt-28">
-      <h1 className="text-lg md:text-xl lg:text-2xl font-bold mb-6"> Available at {mainLocation}</h1>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {houses.map(house => (
-          <VerticalCard
-            key={house.id}
-            imageUrl={image}
-            imageAlt={house.location}
-            location={house.location}
-            price={house.price}
-            distance={house.distance}
-            icon={FiMapPin}
-            cta="View Details"
-          />
-        ))}
+      <div className="pt-28">
+        <h1 className="text-lg md:text-xl lg:text-2xl font-bold mb-6">
+          Available at {mainLocation}
+        </h1>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {houses.map(house => (
+            <VerticalCard
+              key={house.id}
+              imageUrl={image}
+              imageAlt={house.location}
+              location={house.location}
+              price={house.price}
+              distance={house.distance}
+              icon={FiMapPin}
+              cta="View Details"
+            />
+          ))}
+        </div>
       </div>
-    </div>
     </Container>
   );
 };
