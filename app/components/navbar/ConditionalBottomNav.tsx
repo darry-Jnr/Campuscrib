@@ -5,7 +5,7 @@ import BottomNav from './BottomNav';
 
 const ConditionalBottomNav = () => {
   const pathname = usePathname();
-  if (pathname.startsWith('/apartment') ) return null;
+  if (pathname.startsWith('/apartment') || ('/auth') ) return null;
   return (
   <BottomNav />
   );

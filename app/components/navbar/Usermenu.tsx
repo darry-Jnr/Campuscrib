@@ -3,6 +3,7 @@ import { AiOutlineMenu } from "react-icons/ai";
 import Avatar from "../Avatar";
 import { useCallback, useState } from "react";
 import MenuItem from "./MenuItem";
+import { useRouter } from "next/navigation";
 
 const Usermenu = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -10,6 +11,8 @@ const Usermenu = () => {
     const toggleOpen = useCallback(() => {
         setIsOpen((value) => !value)
     }, [])
+  
+    const router = useRouter();
 
     return (
         <div className="flex border md:border-gray-400 rounded-full p-2 flex-row items-center gap-3">
@@ -25,12 +28,12 @@ const Usermenu = () => {
                 <div className="flex flex-col cursor-pointer">
                     <>
                     <MenuItem
-                    onClick={() => {}}
+                    onClick={() => {router.push("/auth/login")}}
                     label="Login"
                     />
 
                     <MenuItem
-                    onClick={() => {}}
+                    onClick={() => {router.push("/auth/signup")}}
                     label="Sign Up"
                     />
                     </>
