@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5"; // Added icons
-
+import toast from "react-hot-toast";
 import Container from "../Container";
 import Input from "../inputs/Input";
 import { signIn, signInSocial } from "@/lib/actions/auth-actions";
@@ -15,7 +15,10 @@ import { signIn, signInSocial } from "@/lib/actions/auth-actions";
 // ---------------- Schema
 const schema = z.object({
   email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters").max(20, "Password must be at most 20 characters"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .max(20, "Password must be at most 20 characters"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -33,28 +36,47 @@ const LoginForm = ({ title }: LoginFormProps) => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false); // Added state
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
   // Email/password login
   const handleEmailLogin = async (data: FormData) => {
     setIsLoading(true);
-    setError("");
+    // We no longer need setError("") because toast handles the display
+
     try {
       const result = await signIn(data.email.trim(), data.password);
-      if (!result?.user) {
-        setError("Invalid email or password");
+
+      // 1. Handle specific server errors (returned via our try/catch in auth-actions)
+      if (result?.error) {
+        toast.error(result.error);
         return;
       }
+
+      // 2. Handle missing user object
+      if (!result?.user) {
+        toast.error("Invalid email or password");
+        return;
+      }
+
+      // 3. Success
+      toast.success("Welcome back!");
+
+      // Redirect and refresh to ensure the session is picked up by the UI
       router.push(redirect);
+      router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      // Catches network failures or unexpected server crashes
+      toast.error("Authentication failed. Please check your connection.");
     } finally {
       setIsLoading(false);
     }
   };
-
   // Google login
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -72,32 +94,46 @@ const LoginForm = ({ title }: LoginFormProps) => {
     <Container>
       <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
         {/* Title */}
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">{title}</h2>
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+          {title}
+        </h2>
 
         {/* Error */}
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit(handleEmailLogin)}>
           <Input label="Email" type="email" {...register("email")} />
-          {errors.email && <p className="text-red-500 text-sm mb-2">{errors.email.message}</p>}
+          {errors.email && (
+            <p className="text-red-500 text-sm mb-2">{errors.email.message}</p>
+          )}
 
           {/* Password with Toggle */}
           <div className="relative">
-            <Input 
-              label="Password" 
-              type={showPassword ? "text" : "password"} 
-              {...register("password")} 
+            <Input
+              label="Password"
+              type={showPassword ? "text" : "password"}
+              {...register("password")}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700 focus:outline-none"
             >
-              {showPassword ? <IoEyeOffOutline size={20} /> : <IoEyeOutline size={20} />}
+              {showPassword ? (
+                <IoEyeOffOutline size={20} />
+              ) : (
+                <IoEyeOutline size={20} />
+              )}
             </button>
           </div>
-          {errors.password && <p className="text-red-500 text-sm mb-2">{errors.password.message}</p>}
+          {errors.password && (
+            <p className="text-red-500 text-sm mb-2">
+              {errors.password.message}
+            </p>
+          )}
 
           <button
             type="submit"

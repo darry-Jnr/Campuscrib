@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5"; // Added icons
-
+import toast from "react-hot-toast";
 import Container from "../Container";
 import Input from "../inputs/Input";
 import { signIn, signUp, signInSocial } from "@/lib/actions/auth-actions";
@@ -40,39 +40,92 @@ const SignupForm = ({ title }: SignupFormProps) => {
   });
 
   // Email/password authentication
-  const handleEmailAuth = async (data: FormData) => {
-    setIsLoading(true);
-    setError("");
-    try {
-      if (isSignIn) {
-        const result = await signIn(data.email.trim(), data.password);
-        if (!result?.user) {
-          setError("Invalid email or password");
-          return;
-        }
-      } else {
-        const result = await signUp(data.email.trim(), data.password, data.fullName);
-        if (!result?.user) {
-          setError("Failed to create account");
-          return;
-        }
-      }
-      router.push(redirect);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Authentication failed");
-    } finally {
-      setIsLoading(false);
+  // const handleEmailAuth = async (data: FormData) => {
+  //   setIsLoading(true);
+  //   setError("");
+  //   try {
+  //     if (isSignIn) {
+  //       const result = await signIn(data.email.trim(), data.password);
+  //       if (!result?.user) {
+  //         setError("Invalid email or password");
+  //         return;
+  //       }
+  //     } else {
+  //       const result = await signUp(data.email.trim(), data.password, data.fullName);
+  //       if (!result?.user) {
+  //         setError("Failed to create account");
+  //         return;
+  //       }
+  //     }
+  //     router.push(redirect);
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : "Authentication failed");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+// Email/password authentication
+const handleEmailAuth = async (data: FormData) => {
+  setIsLoading(true);
+  
+  try {
+    let result;
+
+    if (isSignIn) {
+      result = await signIn(data.email.trim(), data.password);
+    } else {
+      result = await signUp(data.email.trim(), data.password, data.fullName);
     }
-  };
+
+    // 1. Check if the server returned an error message (like "password too short")
+    if (result?.error) {
+      toast.error(result.error);
+      return; // Stop execution here
+    }
+
+    // 2. Check if the user object is missing for any other reason
+    if (!result?.user) {
+      toast.error(isSignIn ? "Invalid email or password" : "Failed to create account");
+      return;
+    }
+
+    // 3. Success!
+    toast.success(isSignIn ? "Welcome back!" : "Account created successfully!");
+    router.push(redirect);
+    router.refresh(); 
+    
+  } catch (err) {
+    // This catches actual network crashes or unexpected server explosions
+    toast.error("A connection error occurred. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Social login (Google)
+  // const handleSocialAuth = async (provider: "google") => {
+  //   setIsLoading(true);
+  //   setError("");
+  //   try {
+  //     await signInSocial(provider);
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : "Social login failed");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleSocialAuth = async (provider: "google") => {
     setIsLoading(true);
-    setError("");
+    // No need for setError("") if you are using toasts now
     try {
+      // This usually triggers a redirect to Google
       await signInSocial(provider);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Social login failed");
+      // If Google fails to load or the server blocks the request
+      const message = err instanceof Error ? err.message : "Social login failed";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

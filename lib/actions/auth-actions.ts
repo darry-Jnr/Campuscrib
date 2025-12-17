@@ -6,20 +6,30 @@ import { headers } from "next/headers";
 
 // Email signup
 export const signUp = async (email: string, password: string, name: string) => {
-  const result = await auth.api.signUpEmail({
-    body: { email, password, name, callbackURL: "/" },
-  });
-  return result;
+  try {
+    const result = await auth.api.signUpEmail({
+      body: { email, password, name, callbackURL: "/" },
+    });
+    return { user: result.user, error: null }; // Success
+  } catch (err: any) {
+    // Return the message so the frontend can show it in a Toast
+    return { user: null, error: err.message || "Failed to create account" };
+  }
 };
 
 // Email signin
 export const signIn = async (email: string, password: string) => {
-  const result = await auth.api.signInEmail({
-    body: { email, password, callbackURL: "/" },
-  });
-  return result;
+  try {
+    const result = await auth.api.signInEmail({
+      body: { email, password, callbackURL: "/" },
+    });
+    return { user: result.user, error: null }; // Success
+  } catch (err: any) {
+    return { user: null, error: err.message || "Invalid email or password" };
+  }
 };
 
+// Social login (No change needed here as redirect handles it)
 export const signInSocial = async (provider: "google") => {
     const { url } = await auth.api.signInSocial({
       body: { 
@@ -29,13 +39,16 @@ export const signInSocial = async (provider: "google") => {
     });
   
     if (url) redirect(url);
-  };
-  
+};
 
 // Sign out
 export const signOut = async () => {
-  const result = await auth.api.signOut({
-    headers: await headers(), // only works in server context
-  });
-  return result;
+  try {
+    const result = await auth.api.signOut({
+      headers: await headers(),
+    });
+    return result;
+  } catch (err) {
+    return { error: "Failed to sign out" };
+  }
 };
