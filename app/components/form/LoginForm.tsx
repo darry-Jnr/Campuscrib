@@ -1,90 +1,115 @@
-"use client";
+'use client';
 
+import { z } from "zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FaGoogle } from "react-icons/fa";
+
 import Container from "../Container";
 import Input from "../inputs/Input";
-import { useRouter, useSearchParams } from "next/navigation";
+import { signIn, signInSocial } from "@/lib/actions/auth-actions";
 
+// ---------------- Schema
+const schema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters").max(20, "Password must be at most 20 characters"),
+});
 
-interface FormData {
-  email: string;
-  password: string;
-}
+type FormData = z.infer<typeof schema>;
 
 interface LoginFormProps {
   title: string;
 }
 
 const LoginForm = ({ title }: LoginFormProps) => {
-  const { register, handleSubmit } = useForm<FormData>();
-
-  const submitData = async (data: FormData) => {
-    try {
-      const res = await fetch("http://localhost:3001/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
-      });
-
-      const result = await res.json();
-
-      if (result.success) {
-        // Save JWT token
-        localStorage.setItem("token", result.token);
-        alert("Login successful!");
-        // Redirect or update state here if needed
-      } else {
-        alert(result.message);
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("Something went wrong. Please try again.");
-    }
-  };
-
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleClick = () => {
-    localStorage.setItem("token", "YOUR_JWT_TOKEN");
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
 
-    //REDIRECT AFTER LOGIN
-    router.push(redirect)
-  }
+  // Email/password login
+  const handleEmailLogin = async (data: FormData) => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const result = await signIn(data.email.trim(), data.password);
+      if (!result?.user) {
+        setError("Invalid email or password");
+        return;
+      }
+      router.push(redirect);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Google login
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      await signInSocial("google"); // redirect handled server-side
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Container>
       <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
         {/* Title */}
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          {title}
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">{title}</h2>
+
+        {/* Error */}
+        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
 
         {/* Form */}
-        <form onSubmit={handleSubmit(submitData)}>
+        <form onSubmit={handleSubmit(handleEmailLogin)}>
           <Input label="Email" type="email" {...register("email")} />
+          {errors.email && <p className="text-red-500 text-sm mb-2">{errors.email.message}</p>}
+
           <Input label="Password" type="password" {...register("password")} />
+          {errors.password && <p className="text-red-500 text-sm mb-2">{errors.password.message}</p>}
 
           <button
             type="submit"
-            onClick={handleClick}
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-bold p-3 rounded-md mt-4 transition"
+            disabled={isLoading}
+            className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold p-3 rounded-md mt-4 transition"
           >
-            Login
+            {isLoading ? "Please wait..." : "Login"}
           </button>
         </form>
 
         {/* Divider */}
+        <div className="my-4 flex items-center justify-center gap-2">
+          <span className="text-gray-500">or</span>
+        </div>
+
+        {/* Google Login */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold p-3 rounded-md transition"
+        >
+          <FaGoogle size={20} />
+          <span>Continue with Google</span>
+        </button>
+
         <hr className="my-6 border-gray-300" />
 
-        {/* Sign up prompt */}
         <p className="text-center text-gray-600">
           Don't have an account?{" "}
           <a

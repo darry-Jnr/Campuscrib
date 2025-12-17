@@ -4,8 +4,12 @@ import Container from '../Container';
 import Logo from './Logo';
 import BecomeAgent from './BecomeAgent';
 import Usermenu from './Usermenu';
+import { auth } from '@/lib/auth';
 
-const Navbar = () => {
+
+type Session = typeof auth.$Infer.Session
+
+const Navbar = ({session}: {session: Session | null}) => {
   return (
     <div className="fixed w-full bg-white shadow-sm z-10">
       <div className="py-4 border-b">
@@ -24,7 +28,7 @@ const Navbar = () => {
             
             <div className="flex flex-row items-center gap-3">
               <BecomeAgent />
-              <Usermenu />
+              <Usermenu session={session}/>
             </div>
           </div>
         </Container>
