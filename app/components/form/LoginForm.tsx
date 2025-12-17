@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5"; // Added icons
 
 import Container from "../Container";
 import Input from "../inputs/Input";
@@ -30,6 +31,7 @@ const LoginForm = ({ title }: LoginFormProps) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // Added state
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -80,7 +82,21 @@ const LoginForm = ({ title }: LoginFormProps) => {
           <Input label="Email" type="email" {...register("email")} />
           {errors.email && <p className="text-red-500 text-sm mb-2">{errors.email.message}</p>}
 
-          <Input label="Password" type="password" {...register("password")} />
+          {/* Password with Toggle */}
+          <div className="relative">
+            <Input 
+              label="Password" 
+              type={showPassword ? "text" : "password"} 
+              {...register("password")} 
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              {showPassword ? <IoEyeOffOutline size={20} /> : <IoEyeOutline size={20} />}
+            </button>
+          </div>
           {errors.password && <p className="text-red-500 text-sm mb-2">{errors.password.message}</p>}
 
           <button

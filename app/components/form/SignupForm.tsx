@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5"; // Added icons
 
 import Container from "../Container";
 import Input from "../inputs/Input";
@@ -32,6 +33,7 @@ const SignupForm = ({ title }: SignupFormProps) => {
   const [isSignIn, setIsSignIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // Added state
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -69,7 +71,6 @@ const SignupForm = ({ title }: SignupFormProps) => {
     setError("");
     try {
       await signInSocial(provider);
-      // Redirect handled inside signInSocial (server-side)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Social login failed");
     } finally {
@@ -98,7 +99,20 @@ const SignupForm = ({ title }: SignupFormProps) => {
           <Input label="Email" type="email" {...register("email")} />
           {errors.email && <p className="text-red-500 text-sm mb-2">{errors.email.message}</p>}
 
-          <Input label="Password" type="password" {...register("password")} />
+          <div className="relative">
+            <Input 
+              label="Password" 
+              type={showPassword ? "text" : "password"} 
+              {...register("password")} 
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <IoEyeOffOutline size={20} /> : <IoEyeOutline size={20} />}
+            </button>
+          </div>
           {errors.password && <p className="text-red-500 text-sm mb-2">{errors.password.message}</p>}
 
           <button
