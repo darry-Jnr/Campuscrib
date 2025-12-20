@@ -5,9 +5,9 @@ import { IconType } from "react-icons";
 interface ButtonProps {
     label: string;
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-    disabled: boolean;
+    disabled?: boolean;
     outline: boolean;
-    icon: IconType;
+    icon?: IconType;
   
 }
 
@@ -18,9 +18,9 @@ const Button = ({label, onClick, disabled, outline,icon:Icon}:ButtonProps) => {
         disabled= {disabled}
     
     className={`
-    relative disabled:opacity-70 disabled: rounded-lg h-full w-full transition disabled:cursor-not-allowed 
-    ${ outline? `bg-white` : `bg-green-500`}
-    ${ outline? `border-black` : `border-green-500`}
+    relative disabled:opacity-70 border disabled: rounded-lg h-full p-2 transition disabled:cursor-not-allowed 
+    ${ outline? `bg-gray-300` : `bg-green-500`}
+    ${ outline? `border-gray-300` : `border-green-500`}
     ${ outline? `text-black` : `text-white`}
   
     `}>

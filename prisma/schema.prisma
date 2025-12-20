@@ -24,6 +24,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  profile Profile?
+
   @@unique([email])
   @@map("user")
 }
@@ -64,14 +66,19 @@ model Account {
   @@map("account")
 }
 
-model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
 
-  @@index([identifier])
-  @@map("verification")
+model Profile {
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+  name          String
+  dept         String
+  level        String
+  gender       String?
+  location     String? // city or area
+  bio          String? // short bio about the person
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

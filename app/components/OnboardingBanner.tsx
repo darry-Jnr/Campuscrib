@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 export default function OnboardingBanner({
   steps = null,
   storageKey = "app_onboarding_seen",
-  onFinishRedirect = "/dashboard",
+  
 }) {
   const router = useRouter();
 
@@ -59,7 +59,7 @@ export default function OnboardingBanner({
   function finish() {
     saveSeen();
     setVisible(false);
-    router.push(onFinishRedirect);
+    router.refresh()
   }
 
   function skip() {
