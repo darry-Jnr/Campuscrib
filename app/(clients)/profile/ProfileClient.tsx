@@ -36,6 +36,10 @@ export default function ProfileClient({ profile: initialProfile, email }: any) {
           <input name="phone" value={profile.phone || ""} onChange={handleChange} className="font-medium focus:outline-none" />
         </div>
         <div className="flex flex-col">
+          <label className="text-gray-500 text-sm">Email</label>
+          <input name="email" value={email} onChange={handleChange} className="font-medium focus:outline-none" />
+        </div>
+        <div className="flex flex-col">
           <label className="text-gray-500 text-sm">Gender</label>
           <input name="gender" value={profile.gender || ""} onChange={handleChange} className="font-medium focus:outline-none" />
         </div>
