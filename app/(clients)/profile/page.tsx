@@ -41,7 +41,7 @@ export default async function ProfilePage() {
             {/* If logged in, show Edit Modal. If not, show Login. */}
             <div>
               {session ? (
-                <ProfileModal initialData={profile} />
+                <ProfileModal initialData={profile ? { ...profile, phone: profile.phone ? parseInt(profile.phone, 10) : null } : null} />
               ) : (
                 <LoginButton />
               )}
