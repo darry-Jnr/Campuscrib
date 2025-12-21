@@ -13,18 +13,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  AGENT
+  ADMIN
+}
+
 model User {
-  id            String    @id
+  id            String      @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean     @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   sessions      Session[]
   accounts      Account[]
-
-  profile Profile?
+  role          UserRole    @default(USER)
+  profile       Profile?
+  apartments    Apartment[]
 
   @@unique([email])
   @@map("user")
@@ -67,9 +74,9 @@ model Account {
 }
 
 model Profile {
-  id          String  @id @default(cuid())
-  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String  @unique
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @unique
   name        String
   dept        String
   phone       String?
@@ -80,6 +87,24 @@ model Profile {
   location    String? // city or area
   bio         String? // short bio about the person
   isPublished Boolean? @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Apartment {
+  id           String   @id @default(cuid())
+  mainLocation String // e.g., South Gate
+  streetName   String // e.g., Ibikunle Street
+  price        Int // Store as Int (e.g., 120000) for easier filtering
+  distance     String // e.g., 5 mins
+  description  String?  @db.Text
+  imageUrls    String[] // Array of strings for multiple photos
+  videoUrl     String? // Optional video tour
+
+  // Relations
+  agent   User   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

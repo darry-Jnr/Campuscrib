@@ -37,9 +37,12 @@ export default async function page() {
       <Container>
         <div className="pt-24 pb-20">
           <div className="mb-8">
-            <NewsBanner 
-            message="make sure your phone number is your whatsapp number"
-            />
+            { userProfile && (
+                <NewsBanner 
+                message="make sure your phone number is your whatsapp number"
+                />
+            )}
+          
             <h1 className="text-3xl font-bold text-gray-900">Find a Roommate</h1>
             <p className="text-gray-600">Browse students looking for accommodation</p>
           </div>
