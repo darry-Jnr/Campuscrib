@@ -67,18 +67,19 @@ model Account {
 }
 
 model Profile {
-  id       String  @id @default(cuid())
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   String  @unique
-  name     String
-  dept     String
-  phone    String?
-  school   String?
-  status   String?
-  level    String
-  gender   String?
-  location String? // city or area
-  bio      String? // short bio about the person
+  id          String  @id @default(cuid())
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String  @unique
+  name        String
+  dept        String
+  phone       String?
+  school      String?
+  status      String?
+  level       String
+  gender      String?
+  location    String? // city or area
+  bio         String? // short bio about the person
+  isPublished Boolean? @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
