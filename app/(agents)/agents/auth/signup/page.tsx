@@ -1,8 +1,9 @@
-"use client";
-
+'use server'
+import { checkExistingAgent } from "@/app/actions/agents";
 import AgentsSignupForm from "@/app/components/form/AgentsSignupForm";
 
-const page = () => {
+export default async function page() {
+  await checkExistingAgent();
   return (
     <div>
       <AgentsSignupForm />
@@ -10,4 +11,4 @@ const page = () => {
   )
 }
 
-export default page
+

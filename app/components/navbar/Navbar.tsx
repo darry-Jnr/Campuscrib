@@ -27,7 +27,7 @@ const Navbar = ({session}: {session: Session | null}) => {
             <Logo />
             
             <div className="flex flex-row items-center gap-3">
-              <BecomeAgent />
+              {/* <BecomeAgent /> */}
               <Usermenu session={session}/>
             </div>
           </div>

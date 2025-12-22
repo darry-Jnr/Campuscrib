@@ -46,12 +46,12 @@ const Usermenu = ({ session }: { session: Session | null }) => {
             {session && (
               <>
                 <MenuItem
-                  onClick={() => router.push("/agent")}
-                  label="Become an Agent"
-                />
-                <MenuItem
                   onClick={() => router.push("/roomatesearch")}
                   label="Roommate Match"
+                />
+                <MenuItem
+                  onClick={() => router.push("/agents/auth/signup")}
+                  label="Become an Agent"
                 />
                 <MenuItem
                   onClick={handleSignOut}

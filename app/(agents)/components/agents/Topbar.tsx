@@ -8,6 +8,8 @@ interface TopbarProps {
 }
 
 const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
+  
+
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between h-16 bg-white shadow-md p-4 w-full">
       <FiMenu 
