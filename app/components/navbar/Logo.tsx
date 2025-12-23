@@ -9,7 +9,7 @@ const Logo = () => {
         CampusCrib
         </div>
         <div className="md:hidden font-semibold text-2xl cursor-pointer">
-        CC
+        Campuscrib
         </div>
         </>
   )

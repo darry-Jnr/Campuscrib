@@ -31,7 +31,7 @@ model User {
   accounts      Account[]
   role          UserRole      @default(USER)
   profile       Profile?
-  apartments    Apartment[]
+  listings      Listing[]
   agentprofile  AgentProfile?
 
   @@unique([email])
@@ -93,7 +93,7 @@ model Profile {
   updatedAt DateTime @updatedAt
 }
 
-model Apartment {
+model Listing {
   id           String   @id @default(cuid())
   mainLocation String // e.g., South Gate
   streetName   String // e.g., Ibikunle Street
@@ -101,20 +101,24 @@ model Apartment {
   distance     String // e.g., 5 mins
   description  String?  @db.Text
   imageUrls    String[] // Array of strings for multiple photos
-  videoUrl     String? // Optional video tour
-
+  videoUrl     String // Optional video tour
+  hasFence     Boolean?  @default(false)
+  electricity  Boolean? @default(false)
+  water        Boolean?  @default(false)
+  security     Boolean?  @default(false)
+  solar        Boolean?  @default(false)
   // Relations
-  agent   User   @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  agentId String
+  agent        User     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId      String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 enum VerificationStatus {
-  REGISTERED        // Level 1: Basic Profile
+  REGISTERED // Level 1: Basic Profile
   IDENTITY_VERIFIED // Level 2: NIN Provided
-  REJECTED          // Banned/Scammer
+  REJECTED // Banned/Scammer
 }
 
 model AgentProfile {
@@ -124,23 +128,23 @@ model AgentProfile {
 
   // Business Identity (Step 1)
   businessName      String
-  agentType         String  // "student", "professional", "landlord"
-  yearsOfExperience Int?    @default(0)
+  agentType         String // "student", "professional", "landlord"
+  yearsOfExperience Int?   @default(0)
 
   // Contact Details (Step 2)
   whatsappNumber String
-  backupNumber   String?    // Changed to optional in case they don't have two lines
+  backupNumber   String? // Changed to optional in case they don't have two lines
   officeAddress  String?
-  responseTime   String?    // Added this from your form!
+  responseTime   String? // Added this from your form!
 
   // Verification (Step 3)
-  nin           String?     // Changed to String? so they can skip Step 3
-  association   String?     // e.g., "Akure Realtors Association"
-  
+  nin         String? // Changed to String? so they can skip Step 3
+  association String? // e.g., "Akure Realtors Association"
+
   // The "Status Switch"
-  status        VerificationStatus @default(REGISTERED) 
-  isVerified    Boolean            @default(false) // You manually toggle this after checking the NIN
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status     VerificationStatus @default(REGISTERED)
+  isVerified Boolean            @default(false) // You manually toggle this after checking the NIN
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

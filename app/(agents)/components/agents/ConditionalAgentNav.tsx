@@ -20,7 +20,7 @@ const ConditionalAgentNav = () => {
   return (
     <>
       <Sidebar isVisible={isSidebarVisible} onClose={toggleSidebar} />
-      <div className="flex flex-col min-h-screen">
+      <div className="">
         <Topbar onMenuClick={toggleSidebar} />
       </div>
     </>
