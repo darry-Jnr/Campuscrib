@@ -44,14 +44,7 @@ const ApartmentDetail = ({
     e.preventDefault();
     e.stopPropagation();
 
-    // 1. Check Login Status
-    const token = localStorage.getItem("token");
-    if (!token) {
-      // If no token, redirect to login
-      router.push(`/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-
+  
     // 2. WhatsApp Logic
     if (agentPhone) {
       let cleanedNumber = agentPhone.replace(/\D/g, '');
