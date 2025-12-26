@@ -182,7 +182,7 @@ export default function ListingUploadForm() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-linear-to-br from-slate-50 to-slate-100 py-6 px-4 sm:py-12 overflow-x-hidden">
+    <div className="w-full min-h-screen bg-linear-to-br from-slate-50 to-slate-100 py-6  sm:py-12 overflow-x-hidden">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Upload New Listing</h1>

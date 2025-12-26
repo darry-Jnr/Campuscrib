@@ -13,9 +13,8 @@ interface ApartmentDetailProps {
   price: string;
   distance: string;
   agentName: string;
-  agentPhone?: string; // Added this prop
+  agentPhone?: string; 
   description: string;
-  // Amenity Props
   hasFence?: boolean | null;
   electricity?: boolean | null;
   water?: boolean | null;
@@ -30,7 +29,7 @@ const ApartmentDetail = ({
   price,
   distance,
   agentName,
-  agentPhone, // Destructured here
+  agentPhone,
   description,
   hasFence,
   electricity,
@@ -40,33 +39,36 @@ const ApartmentDetail = ({
 }: ApartmentDetailProps) => {
   const router = useRouter();
 
-  const handleContact = () => {
+  const handleContact = (e: React.MouseEvent) => {
+    // Prevent any parent links or default form actions
+    e.preventDefault();
+    e.stopPropagation();
+
     // 1. Check Login Status
     const token = localStorage.getItem("token");
     if (!token) {
+      // If no token, redirect to login
       router.push(`/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
 
     // 2. WhatsApp Logic
     if (agentPhone) {
-      // Clean the string (remove spaces, dashes, etc.)
       let cleanedNumber = agentPhone.replace(/\D/g, '');
 
-      // Convert local Nigerian format (080...) to international (23480...)
       if (cleanedNumber.startsWith('0')) {
         cleanedNumber = '234' + cleanedNumber.substring(1);
       }
 
-      // Create a nice message
       const message = `Hello ${agentName}, I am interested in the apartment at ${location} (${mainLocation}) I saw on CampusCrib. Is it still available?`;
-      
-      // Open WhatsApp in a new tab
-      window.open(`https://wa.me/${cleanedNumber}?text=${encodeURIComponent(message)}`, '_blank');
+      const whatsappUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(message)}`;
+
+      // Use window.location.href for better mobile support
+      window.location.href = whatsappUrl;
     } else {
       alert("This agent hasn't provided a WhatsApp number yet.");
     }
-  };
+  }; // <--- Fixed the missing closing brace here
 
   return (
     <div className="pt-22">
@@ -151,6 +153,7 @@ const ApartmentDetail = ({
               <p className="text-2xl font-black text-green-500">{price}</p>
             </div>
             <button 
+              type="button"
               onClick={handleContact} 
               className="bg-green-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-green-700 transition-all shadow-xl shadow-green-100 active:scale-95"
             >
