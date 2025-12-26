@@ -102,11 +102,12 @@ model Listing {
   description  String?  @db.Text
   imageUrls    String[] // Array of strings for multiple photos
   videoUrl     String // Optional video tour
-  hasFence     Boolean?  @default(false)
+  approved     Boolean  @default(true)
+  hasFence     Boolean? @default(false)
   electricity  Boolean? @default(false)
-  water        Boolean?  @default(false)
-  security     Boolean?  @default(false)
-  solar        Boolean?  @default(false)
+  water        Boolean? @default(false)
+  security     Boolean? @default(false)
+  solar        Boolean? @default(false)
   // Relations
   agent        User     @relation(fields: [agentId], references: [id], onDelete: Cascade)
   agentId      String

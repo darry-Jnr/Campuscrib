@@ -1,4 +1,4 @@
-"use client";
+
 
 import Card from "../components/cards/Card";
 import Container from "../components/Container";

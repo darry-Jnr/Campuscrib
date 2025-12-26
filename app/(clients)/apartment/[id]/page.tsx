@@ -1,43 +1,57 @@
-'use client';
-
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 import ApartmentDetail from "@/app/components/details/ApartmentDetails";
-import image from "@/public/images/test.webp";
-import { useParams } from "next/navigation";
 
-const cardData = [
-  { id: 1, mainLocation: "South Gate", location: "Ibikunle Street", price: "₦120,000", distance: "5 mins" },
-  { id: 2, mainLocation: "South Gate", location: "Aule Road", price: "₦150,000", distance: "7 mins" },
-  { id: 3, mainLocation: "South Gate", location: "Orita Area", price: "₦100,000", distance: "4 mins" },
-  { id: 4, mainLocation: "North Gate", location: "Road Block", price: "₦140,000", distance: "8 mins" },
-  { id: 5, mainLocation: "North Gate", location: "FUTA North Road", price: "₦110,000", distance: "6 mins" },
-  { id: 6, mainLocation: "North Gate", location: "Obanla Extension", price: "₦125,000", distance: "7 mins" },
-  { id: 7, mainLocation: "West Gate", location: "Poly Road", price: "₦155,000", distance: "9 mins" },
-  { id: 8, mainLocation: "West Gate", location: "Ondo Road", price: "₦105,000", distance: "6 mins" },
-  { id: 9, mainLocation: "West Gate", location: "Oke-Ijebu Layout", price: "₦135,000", distance: "7 mins" },
-];
+export default async function ApartmentPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  // 1. Resolve the params
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
 
+  // 2. Fetch data from DB with the nested Agent Profile
+  const apartment = await prisma.listing.findUnique({
+    where: { id: id },
+    include: {
+      agent: {
+        include: {
+          agentprofile: true, 
+        }
+      },
+    },
+  });
 
-const ApartmentPage = () => {
-  const { id } = useParams();  
-  const house = cardData.find(h => h.id === Number(id));
+  // 3. Handle 404
+  if (!apartment) {
+    notFound();
+  }
 
-  if (!house) return <p>House not found.</p>;
+  // 4. Extract Agent Details Safely
+  const businessName = apartment.agent?.agentprofile?.businessName || "CampusCrib Agent";
+  const whatsappNumber = apartment.agent?.agentprofile?.whatsappNumber;
 
   return (
-    <div className="max-w-3xl mx-auto pt-28">
-      <ApartmentDetail
-        id={house.id}
-        imageUrl={image}
-        imageWidth={500}
-        mainLocation={house.mainLocation}
-        location={house.location}
-        price={house.price}
-        distance={house.distance}
-        agentName="Darry"
-        description="igiorgorgore"
-      />
-    </div>
+    <ApartmentDetail
+      id={apartment.id}
+      videoUrl={apartment.videoUrl}
+      mainLocation={apartment.mainLocation}
+      location={apartment.streetName}
+      price={`₦${Number(apartment.price).toLocaleString()}`}
+      distance={apartment.distance}
+      description={apartment.description || "No description provided."}
+      
+      // Agent Info for the WhatsApp Logic
+      agentName={businessName}
+      agentPhone={whatsappNumber} 
+      
+      // Amenities
+      hasFence={apartment.hasFence}
+      electricity={apartment.electricity}
+      water={apartment.water}
+      security={apartment.security}
+      solar={apartment.solar}
+    />
   );
-};
-
-export default ApartmentPage;
+}
