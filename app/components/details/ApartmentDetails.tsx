@@ -45,23 +45,29 @@ const ApartmentDetail = ({
     e.stopPropagation();
 
   
-    // 2. WhatsApp Logic
-    if (agentPhone) {
-      let cleanedNumber = agentPhone.replace(/\D/g, '');
+// 2. WhatsApp Logic
+if (agentPhone) {
+  let cleanedNumber = agentPhone.replace(/\D/g, '');
 
-      if (cleanedNumber.startsWith('0')) {
-        cleanedNumber = '234' + cleanedNumber.substring(1);
-      }
+  if (cleanedNumber.startsWith('0')) {
+    cleanedNumber = '234' + cleanedNumber.substring(1);
+  }
 
-      const message = `Hello ${agentName}, I am interested in the apartment at ${location} (${mainLocation}) I saw on CampusCrib. Is it still available?`;
-      const whatsappUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(message)}`;
+  // GET THE CURRENT PAGE URL
+  // This helps the agent identify the exact listing immediately
+  const pageUrl = window.location.href;
 
-      // Use window.location.href for better mobile support
-      window.location.href = whatsappUrl;
-    } else {
-      alert("This agent hasn't provided a WhatsApp number yet.");
-    }
-  }; // <--- Fixed the missing closing brace here
+  const message = `Hello ${agentName}, I am interested in this apartment on CampusCrib: ${location} (${mainLocation}). 
+  
+Check it out here: ${pageUrl}`;
+
+  const whatsappUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(message)}`;
+
+  // Direct redirect for best mobile app triggering
+  window.location.href = whatsappUrl;
+} else {
+  alert("This agent hasn't provided a WhatsApp number yet.");
+}}
 
   return (
     <div className="pt-22">
