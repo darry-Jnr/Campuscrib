@@ -19,14 +19,15 @@ const Usermenu = ({ session }: { session: Session | null }) => {
     router.push("/auth/login")
   }
   return (
-    <div className="relative flex border md:border-gray-400 rounded-full p-2 flex-row items-center gap-3">
+    <div className="relative flex border md:border-gray-400 rounded-lg p-2 flex-row items-center gap-3">
       <AiOutlineMenu onClick={toggleOpen} size={24} />
       <div className="hidden md:block">
         <Avatar />
       </div>
 
       {isOpen && (
-        <div className="absolute rounded-xl shadow-md md:w-[200px] bg-white overflow-hidden top-12 right-0 text-sm z-50">
+       <div className="absolute rounded-xl shadow-md md:w-[200px] bg-white overflow-hidden top-14 right-0 text-sm z-50 p-2"> 
+{/* Changed top-12 to top-14 to give it more space from the button too */}
           <div className="flex flex-col cursor-pointer">
             {/* Show login/signup if no session */}
             {!session && (

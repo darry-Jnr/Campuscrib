@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -6,17 +6,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
-import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5"; // Added icons
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import toast from "react-hot-toast";
-import Container from "../Container";
-import Input from "../inputs/Input";
-import { signIn, signUp, signInSocial } from "@/lib/actions/auth-actions";
+import { signUp } from "@/lib/actions/auth-actions";
+import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 
 // ---------------- Schema
 const schema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters").max(30, "Full name must be at most 30 characters"),
+  fullName: z
+    .string()
+    .min(2, "Full name must be at least 2 characters")
+    .max(30, "Full name must be at most 30 characters"),
   email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters").max(20, "Password must be at most 20 characters"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .max(20, "Password must be at most 20 characters"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -30,184 +36,247 @@ const SignupForm = ({ title }: SignupFormProps) => {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
 
-  const [isSignIn, setIsSignIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // Added state
+  const [showPassword, setShowPassword] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  // Email/password authentication
-  // const handleEmailAuth = async (data: FormData) => {
-  //   setIsLoading(true);
-  //   setError("");
-  //   try {
-  //     if (isSignIn) {
-  //       const result = await signIn(data.email.trim(), data.password);
-  //       if (!result?.user) {
-  //         setError("Invalid email or password");
-  //         return;
-  //       }
-  //     } else {
-  //       const result = await signUp(data.email.trim(), data.password, data.fullName);
-  //       if (!result?.user) {
-  //         setError("Failed to create account");
-  //         return;
-  //       }
-  //     }
-  //     router.push(redirect);
-  //   } catch (err) {
-  //     setError(err instanceof Error ? err.message : "Authentication failed");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-// Email/password authentication
-const handleEmailAuth = async (data: FormData) => {
-  setIsLoading(true);
-  
-  try {
-    let result;
-
-    if (isSignIn) {
-      result = await signIn(data.email.trim(), data.password);
-    } else {
-      result = await signUp(data.email.trim(), data.password, data.fullName);
-    }
-
-    // 1. Check if the server returned an error message (like "password too short")
-    if (result?.error) {
-      toast.error(result.error);
-      return; // Stop execution here
-    }
-
-    // 2. Check if the user object is missing for any other reason
-    if (!result?.user) {
-      toast.error(isSignIn ? "Invalid email or password" : "Failed to create account");
-      return;
-    }
-
-    // 3. Success!
-    toast.success(isSignIn ? "Welcome back!" : "Account created successfully!");
-    router.push(redirect);
-    router.refresh(); 
-    
-  } catch (err) {
-    // This catches actual network crashes or unexpected server explosions
-    toast.error("A connection error occurred. Please try again.");
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-  // Social login (Google)
-  // const handleSocialAuth = async (provider: "google") => {
-  //   setIsLoading(true);
-  //   setError("");
-  //   try {
-  //     await signInSocial(provider);
-  //   } catch (err) {
-  //     setError(err instanceof Error ? err.message : "Social login failed");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  const handleSocialAuth = async (provider: "google") => {
+  // Email/password signup
+  const handleEmailSignup = async (data: FormData) => {
     setIsLoading(true);
-    // No need for setError("") if you are using toasts now
+
     try {
-      // This usually triggers a redirect to Google
-      await signInSocial(provider);
+      const result = await signUp(
+        data.email.trim(),
+        data.password,
+        data.fullName
+      );
+
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      if (!result?.user) {
+        toast.error("Failed to create account");
+        return;
+      }
+
+      toast.success("Account created successfully!");
+      router.push(redirect);
+      router.refresh();
     } catch (err) {
-      // If Google fails to load or the server blocks the request
-      const message = err instanceof Error ? err.message : "Social login failed";
-      toast.error(message);
+      toast.error("A connection error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
+
+   // 3. Update the handleGoogleLogin function
+   const handleGoogleSignup = async () => {
+    setIsLoading(true);
+    try {
+      // This handles the cookie, the state, and the redirect automatically
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+    } catch (err) {
+      toast.error("Google login failed. Please try again.");
+      console.error(err);
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <Container>
-      <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
-        {/* Title */}
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">{title}</h2>
-
-        {/* Error */}
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit(handleEmailAuth)}>
-          {!isSignIn && (
-            <>
-              <Input label="Full Name" {...register("fullName")} />
-              {errors.fullName && <p className="text-red-500 text-sm mb-2">{errors.fullName.message}</p>}
-            </>
-          )}
-
-          <Input label="Email" type="email" {...register("email")} />
-          {errors.email && <p className="text-red-500 text-sm mb-2">{errors.email.message}</p>}
-
-          <div className="relative">
-            <Input 
-              label="Password" 
-              type={showPassword ? "text" : "password"} 
-              {...register("password")} 
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700"
-            >
-              {showPassword ? <IoEyeOffOutline size={20} /> : <IoEyeOutline size={20} />}
-            </button>
+    <div className="min-h-screen bg-linear-to-br from-green-50 via-white to-green-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        {/* Logo/Brand */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-2xl mb-4 shadow-lg shadow-green-500/30">
+            <span className="text-2xl font-bold text-white">CC</span>
           </div>
-          {errors.password && <p className="text-red-500 text-sm mb-2">{errors.password.message}</p>}
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold p-3 rounded-md mt-4 transition"
-          >
-            {isLoading ? "Please wait..." : isSignIn ? "Sign In" : "Sign Up"}
-          </button>
-        </form>
-
-        {/* Divider */}
-        <div className="my-4 flex items-center justify-center gap-2">
-          <span className="text-gray-500">or</span>
+          <h2 className="text-3xl font-bold text-slate-800 mb-2">
+            Create your account
+          </h2>
+          <p className="text-slate-600">
+            Join CampusCrib and find your perfect home
+          </p>
         </div>
 
-        {/* Google Login Button */}
-        <button
-          type="button"
-          onClick={() => handleSocialAuth("google")}
-          disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 border border-gray-300 bg-white hover:bg-gray-100 p-3 rounded-md transition"
-        >
-          <FaGoogle size={20} className="text-red-500" />
-          <span className="text-gray-700 font-semibold">Continue with Google</span>
-        </button>
-
-        <hr className="my-6 border-gray-300" />
-
-        {/* Toggle Sign Up / Sign In */}
-        <p className="text-center text-gray-600">
-          {isSignIn ? "Don't have an account?" : "Already have an account?"}{" "}
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+          {/* Google Signup First */}
           <button
             type="button"
-            onClick={() => setIsSignIn(!isSignIn)}
-            className="text-green-500 font-semibold hover:underline"
+            onClick={handleGoogleSignup}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-700 font-semibold py-3.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
           >
-            {isSignIn ? "Sign Up" : "Sign In"}
+            <FaGoogle
+              size={20}
+              className="text-red-500 group-hover:scale-110 transition-transform"
+            />
+            <span>Continue with Google</span>
           </button>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-slate-500 font-medium">
+                Or sign up with email
+              </span>
+            </div>
+          </div>
+
+          {/* Form */}
+          <form
+            onSubmit={handleSubmit(handleEmailSignup)}
+            className="space-y-5"
+          >
+            {/* Full Name */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Full name
+              </label>
+              <input
+                type="text"
+                {...register("fullName")}
+                placeholder="John Doe"
+                className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none"
+              />
+              {errors.fullName && (
+                <p className="mt-1.5 text-sm text-red-500">
+                  {errors.fullName.message}
+                </p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Email address
+              </label>
+              <input
+                type="email"
+                {...register("email")}
+                placeholder="you@example.com"
+                className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none"
+              />
+              {errors.email && (
+                <p className="mt-1.5 text-sm text-red-500">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  {...register("password")}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                >
+                  {showPassword ? (
+                    <IoEyeOffOutline size={20} />
+                  ) : (
+                    <IoEyeOutline size={20} />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1.5 text-sm text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
+              <p className="mt-1.5 text-xs text-slate-500">
+                Must be at least 6 characters long
+              </p>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-green-500/30 hover:shadow-green-500/40"
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Creating account...
+                </span>
+              ) : (
+                "Create account"
+              )}
+            </button>
+          </form>
+        </div>
+
+        {/* Sign in link */}
+        <p className="text-center text-slate-600 mt-6">
+          Already have an account?{" "}
+          <a
+            href="/auth/login"
+            className="text-green-600 font-semibold hover:text-green-700 hover:underline transition-colors"
+          >
+            Sign in
+          </a>
         </p>
+
+        {/* Footer */}
+        <div className="text-center mt-8">
+          <p className="text-xs text-slate-500">
+            By creating an account, you agree to our{" "}
+            <Link href="/terms" className="underline hover:text-slate-700">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="underline hover:text-slate-700">
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
       </div>
-    </Container>
+    </div>
   );
 };
 

@@ -1,13 +1,17 @@
 'use client';
-
+import localFont from "next/font/local"; // Add this!
 import { useState, useCallback } from "react";
-import { Raleway } from "next/font/google";
-import Sidebar from "./components/agents/Sidebar";
-import Topbar from "./components/agents/Topbar";
 import ToasterProvider from "../providers/ToasterProvider";
 import '../globals.css';
 import ConditionalAgentNav from "./components/agents/ConditionalAgentNav";
-const font = Raleway({ subsets: ["latin"] });
+
+
+const satoshi = localFont({
+  src: "../../public/fonts/Satoshi-Variable.woff2",
+  variable: "--font-satoshi",
+  display: "swap",
+  weight: '100 900',
+});
 
 interface AgentsLayoutProps {
   children: React.ReactNode;
@@ -21,8 +25,8 @@ export default function AgentsLayout({ children }: AgentsLayoutProps) {
   // }, []);
 
   return (
-    <html lang="en">
-      <body className={font.className}>
+    <html lang="en" className={`${satoshi.variable}`}>
+      <body >
         <ToasterProvider />
 {/* 
         <Sidebar 

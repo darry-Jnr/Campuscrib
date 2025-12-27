@@ -11,6 +11,7 @@ import RoommateToggle from "@/app/components/RoommateToggle";
 import NewsBanner from "@/app/components/NewsBanner";
 
 export default async function page() {
+ 
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -31,6 +32,7 @@ export default async function page() {
 
   return (
     <>
+    
       <div className="block md:hidden">
         <OnboardingBanner />
       </div>

@@ -7,7 +7,7 @@ export default function Home() {
  
   return (
     <Container>
-      <div className="pt-28">
+      <div className="pt-28 pb-11">
     
     <Card />
       </div>

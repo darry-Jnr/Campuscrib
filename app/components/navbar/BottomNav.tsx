@@ -1,5 +1,5 @@
 'use client';
-import { FiHome, FiMessageCircle, FiUser, FiCreditCard } from "react-icons/fi";
+import { FiHome, FiMessageCircle, FiUser, FiFileText, } from "react-icons/fi";
 import { FaUsers } from "react-icons/fa";
 import Link from "next/link";
 
@@ -7,7 +7,7 @@ const BottomNavData = [
   { id: 1, label: "Home", icon: FiHome, type: "normal", url: "/" },
   { id: 2, label: "Chat", icon: FiMessageCircle, type: "normal", url: "/chats" },
   { id: 3, label: "Roommate", icon: FaUsers, type: "center", url:"roomatesearch" }, // action button
-  { id: 4, label: "Payments", icon: FiCreditCard, type: "normal", url: "/payments" },
+  { id: 4, label: "News", icon: FiFileText, type: "normal", url: "/news" },
   { id: 5, label: "Profile", icon: FiUser, type: "normal", url: "/profile" },
 ];
 

@@ -52,7 +52,7 @@ const HorizontalCard = ({
 
         <p className="flex items-center text-xs text-gray-600">
           <Icon size={14} className="mr-1" />
-          {distance}
+          {distance}mins walk to school Gate
         </p>
 
         <p className="font-bold text-sm text-green-700">{price}</p>
