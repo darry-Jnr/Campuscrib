@@ -40,6 +40,7 @@ export default async function RoommateDetailsPage({
       <div className="pt-10 pb-32 max-w-2xl mx-auto">
         <div className="pt-16 absolute">
           <BackButton />
+          
         </div>
        
         {/* HERO SECTION */}
