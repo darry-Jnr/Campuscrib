@@ -1,17 +1,17 @@
+// 1. REMOVE "use client" - This is now a Server Component
 import Container from "@/app/components/Container";
 import OnboardingBanner from "@/app/components/OnboardingBanner";
 import Wrapper from "./Wrapper";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import ProfileModal from "@/app/components/modals/ProfileModal";
-import Toast from "@/app/components/Toast";
 import Link from "next/link";
 import RoommateToggle from "@/app/components/RoommateToggle";
 import NewsBanner from "@/app/components/NewsBanner";
+import Button from "@/app/components/Button";
 
-export default async function page() {
- 
+export default async function Page() {
+  // Fetching session and data on the server is fast and secure
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -32,41 +32,43 @@ export default async function page() {
 
   return (
     <>
-    
       <div className="block md:hidden">
         <OnboardingBanner />
       </div>
       <Container>
         <div className="pt-24 pb-20">
           <div className="mb-8">
-            { userProfile && (
-                <NewsBanner 
-                message="make sure your phone number is your whatsapp number"
-                />
+            {userProfile && (
+              <NewsBanner message="Make sure your phone number is your WhatsApp number" />
             )}
-          
             <h1 className="text-3xl font-bold text-gray-900">Find a Roommate</h1>
             <p className="text-gray-600">Browse students looking for accommodation</p>
           </div>
 
-          {/* 1. GUEST BANNER: Only if user hasn't created a profile yet */}
           {!userProfile && (
-            <div className="mb-10 bg-green-600 rounded-2xl p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+            <div className="mb-10 bg-green-600 rounded-2xl p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl border border-green-500">
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold">List yourself here!</h2>
+                <h2 className="text-2xl font-bold">Find your perfect roommate! 🤝</h2>
+                <p className="text-white bg-white/10 px-3 py-1 rounded-full text-xs font-bold inline-block uppercase tracking-wider">
+                  Profile Incomplete
+                </p>
                 <p className="text-green-100 max-w-md">
-                  Other students can't find you yet. Create your profile to appear in this list and start matching.
+                  Other students can't find you yet. Fill in your lifestyle preferences to start matching.
                 </p>
               </div>
-              {session ? (
-                <ProfileModal initialData={null} />
-              ) : (
-                <Toast />
-              )}
+
+              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                {/* Use Link instead of router.push for better performance */}
+                <Link href={session ? "/profile" : "/auth/login"}>
+                  <Button 
+                    label={session ? "Setup My Profile" : "Login to Get Started"}
+                    outline={true}
+                  />
+                </Link>
+              </div>
             </div>
           )}
 
-          {/* 2. USER TOOLS: Toggle and Preview (Only if profile exists) */}
           {userProfile && (
             <div className="space-y-6 mb-12">
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 text-sm text-gray-600">
@@ -78,10 +80,8 @@ export default async function page() {
                 </span>
               </div>
 
-              {/* The Toggle Button Component */}
               <RoommateToggle initialIsPublished={userProfile.isPublished ?? false} />
 
-              {/* Preview Section */}
               <div className="space-y-3">
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
                   Your Public Preview
@@ -94,18 +94,12 @@ export default async function page() {
                     gender={userProfile.gender || ""}
                   />
                 </div>
-                <p className="text-xs text-gray-500 italic">
-                  {userProfile.isPublished 
-                    ? "Visible to everyone" 
-                    : "Currently hidden from the list"}
-                </p>
               </div>
             </div>
           )}
 
           <hr className="mb-10 border-gray-200" />
 
-          {/* 3. THE MAIN LIST: All public roommates */}
           <h2 className="text-xl font-bold mb-6 text-gray-800">Potential Matches</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -121,8 +115,7 @@ export default async function page() {
               ))
             ) : (
               <p className="text-gray-500 col-span-full py-10 text-center border-2 border-dashed border-gray-200 rounded-xl">
-                There are currently no students listed as looking for roommates. 
-                Be the first to list yourself and let others find you!
+                No students listed yet. Be the first!
               </p>
             )}
           </div>
