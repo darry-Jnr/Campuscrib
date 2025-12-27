@@ -4,6 +4,7 @@ import { FiMapPin, FiZap, FiDroplet, FiShield, FiSun, FiHome } from "react-icons
 import BackButton from "../BackButton";
 import Avatar from "../Avatar";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface ApartmentDetailProps {
   id: string | number;
@@ -20,6 +21,8 @@ interface ApartmentDetailProps {
   water?: boolean | null;
   security?: boolean | null;
   solar?: boolean | null;
+  // This prop is passed down from the Server Page
+  currentUser?: any; 
 }
 
 const ApartmentDetail = ({
@@ -36,38 +39,44 @@ const ApartmentDetail = ({
   water,
   security,
   solar,
+  currentUser, 
 }: ApartmentDetailProps) => {
   const router = useRouter();
 
   const handleContact = (e: React.MouseEvent) => {
-    // Prevent any parent links or default form actions
     e.preventDefault();
     e.stopPropagation();
 
-  
-// 2. WhatsApp Logic
-if (agentPhone) {
-  let cleanedNumber = agentPhone.replace(/\D/g, '');
+    // 1. AUTH GUARD: Check if user is logged in using the prop from the server
+    if (!currentUser) {
+      toast.error("Please login to contact the agent", {
+        icon: '🔒',
+        id: "auth-contact-guard" // prevents toast spam
+      });
+      return router.push("/auth/login");
+    }
 
-  if (cleanedNumber.startsWith('0')) {
-    cleanedNumber = '234' + cleanedNumber.substring(1);
-  }
+    // 2. WHATSAPP LOGIC
+    if (agentPhone) {
+      let cleanedNumber = agentPhone.replace(/\D/g, '');
 
-  // GET THE CURRENT PAGE URL
-  // This helps the agent identify the exact listing immediately
-  const pageUrl = window.location.href;
+      if (cleanedNumber.startsWith('0')) {
+        cleanedNumber = '234' + cleanedNumber.substring(1);
+      }
 
-  const message = `Hello ${agentName}, I am interested in this apartment on CampusCrib: ${location} (${mainLocation}). 
-  
-Check it out here: ${pageUrl}`;
+      const pageUrl = window.location.href;
+      const message = `Hello ${agentName}, I am interested in this apartment on CampusCrib: ${location} (${mainLocation}).\n\nCheck it out here: ${pageUrl}`;
 
-  const whatsappUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(message)}`;
+      const whatsappUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(message)}`;
 
-  // Direct redirect for best mobile app triggering
-  window.location.href = whatsappUrl;
-} else {
-  alert("This agent hasn't provided a WhatsApp number yet.");
-}}
+      // Use toast to show we are redirecting
+      toast.success("Opening WhatsApp...");
+      
+      window.location.href = whatsappUrl;
+    } else {
+      toast.error("This agent hasn't provided a WhatsApp number yet.");
+    }
+  };
 
   return (
     <div className="pt-22">
@@ -110,7 +119,7 @@ Check it out here: ${pageUrl}`;
               </div>
             )}
             {security && (
-              <div className="flex items-center gap-2 p-3 rounded-2xl bg-green-50 text-green-500 border border-green-100">
+              <div className="flex items-center gap-2 p-3 rounded-2xl bg-green-50 text-green-600 border border-green-100">
                 <FiShield /> <span className="text-sm font-semibold">Security</span>
               </div>
             )}
@@ -149,14 +158,14 @@ Check it out here: ${pageUrl}`;
           <div className="max-w-4xl mx-auto flex justify-between items-center p-5 md:p-6">
             <div>
               <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Total Rent</p>
-              <p className="text-2xl font-black text-green-500">{price}</p>
+              <p className="text-2xl font-black text-green-600">{price}</p>
             </div>
             <button 
               type="button"
               onClick={handleContact} 
               className="bg-green-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-green-700 transition-all shadow-xl shadow-green-100 active:scale-95"
             >
-              Contact Agent
+              {currentUser ? "Contact Agent" : "Login to Contact"}
             </button>
           </div>
         </div>

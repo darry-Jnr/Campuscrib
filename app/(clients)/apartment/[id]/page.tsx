@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import { auth } from "@/lib/auth"; // Import your server auth
+import { headers } from "next/headers";
 import ApartmentDetail from "@/app/components/details/ApartmentDetails";
 
 export default async function ApartmentPage({ 
@@ -7,11 +9,17 @@ export default async function ApartmentPage({
 }: { 
   params: Promise<{ id: string }> 
 }) {
-  // 1. Resolve the params
-  const resolvedParams = await params;
+  // 1. Resolve params and Get Session
+  const [resolvedParams, session] = await Promise.all([
+    params,
+    auth.api.getSession({
+      headers: await headers(),
+    }),
+  ]);
+
   const id = resolvedParams.id;
 
-  // 2. Fetch data from DB with the nested Agent Profile
+  // 2. Fetch data from DB
   const apartment = await prisma.listing.findUnique({
     where: { id: id },
     include: {
@@ -23,12 +31,11 @@ export default async function ApartmentPage({
     },
   });
 
-  // 3. Handle 404
   if (!apartment) {
     notFound();
   }
 
-  // 4. Extract Agent Details Safely
+  // 3. Extract Agent Details Safely
   const businessName = apartment.agent?.agentprofile?.businessName || "CampusCrib Agent";
   const whatsappNumber = apartment.agent?.agentprofile?.whatsappNumber;
 
@@ -42,7 +49,10 @@ export default async function ApartmentPage({
       distance={apartment.distance}
       description={apartment.description || "No description provided."}
       
-      // Agent Info for the WhatsApp Logic
+      // Pass the session user to the client component
+      currentUser={session?.user || null}
+      
+      // Agent Info
       agentName={businessName}
       agentPhone={whatsappNumber} 
       
