@@ -1,20 +1,23 @@
-// 1. REMOVE "use client" - This is now a Server Component
 import Container from "@/app/components/Container";
 import OnboardingBanner from "@/app/components/OnboardingBanner";
-import Wrapper from "./Wrapper";
+import Wrapper from "./Wrapper"; // This should be your simple version
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 import RoommateToggle from "@/app/components/RoommateToggle";
-import NewsBanner from "@/app/components/NewsBanner";
-import Button from "@/app/components/Button";
+import CreditBadge from "@/app/components/CreditBadge";
 
-export default async function Page() {
-  // Fetching session and data on the server is fast and secure
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ gender?: string }>;
+}) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+
+  const resolvedParams = await searchParams;
+  const currentGender = resolvedParams.gender;
 
   const userProfile = session?.user?.id
     ? await prisma.profile.findUnique({
@@ -26,6 +29,7 @@ export default async function Page() {
     where: {
       isPublished: true,
       NOT: { userId: session?.user?.id || "" },
+      ...(currentGender ? { gender: currentGender } : {}),
     },
     orderBy: { updatedAt: "desc" },
   });
@@ -37,87 +41,39 @@ export default async function Page() {
       </div>
       <Container>
         <div className="pt-24 pb-20">
-          <div className="mb-8">
-            {userProfile && (
-              <NewsBanner message="Make sure your phone number is your WhatsApp number" />
-            )}
-            <h1 className="text-3xl font-bold text-gray-900">Find a Roommate</h1>
-            <p className="text-gray-600">Browse students looking for accommodation</p>
+          <div className="flex justify-between items-end mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Find a Roommate</h1>
+              <p className="text-gray-600">Connect with students near you</p>
+            </div>
+            {userProfile && <CreditBadge count={userProfile.credits} />}
           </div>
 
-          {!userProfile && (
-            <div className="mb-10 bg-green-600 rounded-2xl p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl border border-green-500">
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold">Find your perfect roommate! 🤝</h2>
-                <p className="text-white bg-white/10 px-3 py-1 rounded-full text-xs font-bold inline-block uppercase tracking-wider">
-                  Profile Incomplete
-                </p>
-                <p className="text-green-100 max-w-md">
-                  Other students can't find you yet. Fill in your lifestyle preferences to start matching.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                {/* Use Link instead of router.push for better performance */}
-                <Link href={session ? "/profile" : "/auth/login"}>
-                  <Button 
-                    label={session ? "Setup My Profile" : "Login to Get Started"}
-                    outline={true}
-                  />
-                </Link>
-              </div>
-            </div>
-          )}
-
           {userProfile && (
-            <div className="space-y-6 mb-12">
-              <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 text-sm text-gray-600">
-                <span>
-                  💡 <strong>Tip:</strong> To update your details, go to your{" "}
-                  <Link href="/profile" className="font-bold text-green-600 hover:underline">
-                    Profile Page
-                  </Link>.
-                </span>
-              </div>
-
-              <RoommateToggle initialIsPublished={userProfile.isPublished ?? false} />
-
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
-                  Your Public Preview
-                </h3>
-                <div className="max-w-sm border-2 border-green-500 rounded-xl overflow-hidden shadow-lg bg-white">
-                  <Wrapper
-                    name={userProfile.name}
-                    level={userProfile.level}
-                    status={userProfile.status || "Looking for roommate"}
-                    gender={userProfile.gender || ""}
-                  />
+            <div className="bg-gray-50 rounded-3xl p-5 mb-10 border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black text-gray-900">Your Status</h3>
+                  <p className="text-xs text-gray-500">
+                    {userProfile.isPublished ? "Visible to everyone" : "Hidden from search"}
+                  </p>
                 </div>
+                <RoommateToggle initialIsPublished={userProfile.isPublished ?? false} />
               </div>
             </div>
           )}
 
-          <hr className="mb-10 border-gray-200" />
-
-          <h2 className="text-xl font-bold mb-6 text-gray-800">Potential Matches</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {roommates.length > 0 ? (
-              roommates.map((person) => (
-                <Wrapper
-                  key={person.id}
-                  name={person.name}
-                  level={person.level}
-                  status={person.status ?? ""}
-                  gender={person.gender ?? ""}
-                />
-              ))
-            ) : (
-              <p className="text-gray-500 col-span-full py-10 text-center border-2 border-dashed border-gray-200 rounded-xl">
-                No students listed yet. Be the first!
-              </p>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {roommates.map((person) => (
+              <Wrapper
+                key={person.id}
+                id={person.id}
+                name={person.name}
+                level={person.level}
+                status={person.status ?? ""}
+                gender={person.gender ?? ""}
+              />
+            ))}
           </div>
         </div>
       </Container>

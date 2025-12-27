@@ -175,12 +175,21 @@ const ProfileModal = ({ initialData }: ProfileModalProps) => {
 
       {step === 3 && (
         <div className="flex flex-col gap-4">
-          <Input
-            label="Location"
-            disabled={isLoading}
-            value={formData.location}
-            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-          />
+          <div className="flex flex-col gap-2">
+      <label className="text-sm font-medium text-gray-700">Preferred Location</label>
+      <select
+        disabled={isLoading}
+        value={formData.location}
+        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+        className="w-full p-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-gray-800"
+      >
+        <option value="" disabled>Where do you prefer to live?</option>
+        <option value="North Gate">North Gate</option>
+        <option value="South Gate">South Gate</option>
+        <option value="West Gate">West Gate</option>
+        <option value="Anywhere">Anywhere / Not sure</option>
+      </select>
+    </div>
           <div>
             <label className="mb-2 block font-semibold text-gray-700 text-sm">Bio</label>
             <textarea

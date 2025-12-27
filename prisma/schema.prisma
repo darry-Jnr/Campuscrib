@@ -89,6 +89,9 @@ model Profile {
   bio         String? // short bio about the person
   isPublished Boolean? @default(false)
 
+  credits        Int      @default(3) // Give them 3 free trials on signup
+  profilesViewed String[] @default([]) // To track who they already unlocked
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
