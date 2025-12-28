@@ -233,7 +233,7 @@ export default function ListingUploadForm() {
                   {errors.price && <p className="mt-1 text-sm text-red-500">{errors.price.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Distance from Campus <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Walking Distance to Campus Gate<span className="text-red-500">*</span></label>
                   <input type="text" {...register("distance", { required: "Distance is required" })} placeholder="e.g., 5 mins" className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none" />
                   {errors.distance && <p className="mt-1 text-sm text-red-500">{errors.distance.message}</p>}
                 </div>

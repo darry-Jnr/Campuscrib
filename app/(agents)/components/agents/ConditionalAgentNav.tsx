@@ -13,7 +13,7 @@ const ConditionalAgentNav = () => {
     setIsSidebarVisible((prev) => !prev);
   }, []);
 
-  if (pathname.startsWith("/agents/auth/signup") || pathname.startsWith("/agents/auth/login")) {
+  if (pathname.startsWith("/agents/auth/signup") || pathname.startsWith("/agents/auth/login") || pathname.startsWith("/agents/pending")) {
     return null;
   }
 

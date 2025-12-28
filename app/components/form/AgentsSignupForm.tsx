@@ -1,12 +1,10 @@
 "use client";
 
-import { checkExistingAgent, createAgentProfile } from "@/app/actions/agents";
+import { createAgentProfile } from "@/app/actions/agents";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-export default  function AgentsSignUpForm() {
-
-
+export default function AgentsSignUpForm() {
   const Labelstyle = "text-sm font-medium leading-none";
   const Inputstyle =
     "flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:opacity-50";
@@ -21,22 +19,27 @@ export default  function AgentsSignUpForm() {
   } = useForm();
 
   const handleNext = async () => {
-    let fieldsToValidate: any[] = [];
-    if (step === 1)
-      fieldsToValidate = ["businessName", "agentType", "yearsOfExperience"];
-    if (step === 2) 
-      fieldsToValidate = ["whatsappNumber", "responseTime"];
-
-    const isStepValid = await trigger(fieldsToValidate);
-    if (isStepValid) setStep((prev) => prev + 1);
+    const isStepValid = await trigger(["businessName", "agentType", "yearsOfExperience"]);
+    if (isStepValid) setStep(2);
   };
 
-  const handleBack = () => setStep((prev) => prev - 1);
+  const handleBack = () => setStep(1);
 
   const onSubmit = async (data: any) => {
-    // Artificial delay to show loading state
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-   await createAgentProfile(data);
+    if (step !== 2) return;
+    try {
+      await createAgentProfile(data);
+      // The redirect is handled inside the 'use server' action
+    } catch (error) {
+      console.error("Submission failed", error);
+    }
+  };
+
+  // Prevents the "Enter" key from submitting early
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
+      e.preventDefault();
+    }
   };
 
   return (
@@ -46,13 +49,16 @@ export default  function AgentsSignUpForm() {
           <h2 className="text-2xl font-semibold tracking-tight">
             Create Agent Account
           </h2>
-          <p className="text-sm text-slate-500 font-medium">Step {step} of 3</p>
+          <p className="text-sm text-slate-500 font-medium">Step {step} of 2</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* STEP 1: Business Details */}
+        <form 
+          onSubmit={handleSubmit(onSubmit)} 
+          onKeyDown={handleKeyDown}
+          className="space-y-6"
+        >
           {step === 1 && (
-            <div className="space-y-4">
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
               <div className="space-y-2">
                 <label className={Labelstyle}>Business or Display Name</label>
                 <input
@@ -103,9 +109,8 @@ export default  function AgentsSignUpForm() {
             </div>
           )}
 
-          {/* STEP 2: Contact Details */}
           {step === 2 && (
-            <div className="space-y-4">
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
               <div className="space-y-2">
                 <label className={Labelstyle}>WhatsApp Number</label>
                 <input
@@ -122,20 +127,6 @@ export default  function AgentsSignUpForm() {
               </div>
 
               <div className="space-y-2">
-                <label className={Labelstyle}>Backup Phone Number (Optional)</label>
-                <input {...register("backupNumber")} className={Inputstyle} placeholder="090..." />
-              </div>
-
-              <div className="space-y-2">
-                <label className={Labelstyle}>Physical Office Address</label>
-                <textarea
-                  {...register("officeAddress")}
-                  className={`${Inputstyle} h-20 py-2`}
-                  placeholder="e.g. North Gate, Akure"
-                />
-              </div>
-
-              <div className="space-y-2">
                 <label className={Labelstyle}>Typical Response Time</label>
                 <select
                   {...register("responseTime", { required: "Select your response speed" })}
@@ -145,55 +136,25 @@ export default  function AgentsSignUpForm() {
                   <option value="instant">⚡ Instant (Within 15 mins)</option>
                   <option value="fast">🕒 Fast (Within 1-2 hours)</option>
                   <option value="medium">🌅 Same Day</option>
-                  <option value="slow">📅 Within 24 hours</option>
                 </select>
                 {errors.responseTime && (
                   <p className="text-red-500 text-xs">{String(errors.responseTime.message)}</p>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* STEP 3: Verification (Optional) */}
-          {step === 3 && (
-            <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-blue-600">🛡️</span>
-                  <h3 className="text-sm font-semibold text-blue-900">Your Data is Secure</h3>
-                </div>
-                <p className="text-xs text-blue-800">We encrypt identity details. Your NIN is never shared.</p>
-              </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className={Labelstyle}>NIN (Identity Number)</label>
-                  <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500">Optional</span>
-                </div>
-                <input
-                  {...register("nin", {
-                    validate: (value) => {
-                      if (!value) return true;
-                      return /^[0-9]{11}$/.test(value) || "NIN must be exactly 11 digits";
-                    }
-                  })}
-                  placeholder="e.g. 12345678901"
-                  className={Inputstyle}
+                <label className={Labelstyle}>Physical Office Address (Optional)</label>
+                <textarea
+                  {...register("officeAddress")}
+                  className={`${Inputstyle} h-20 py-2`}
+                  placeholder="e.g. North Gate, Akure"
                 />
-                {errors.nin && <p className="text-red-500 text-xs">{String(errors.nin.message)}</p>}
-              </div>
-
-              <div className="bg-amber-50 border border-amber-100 p-4 rounded-lg">
-                <p className="text-xs text-amber-800">
-                  Skipping this means your profile remains <strong>Unverified</strong> .
-                </p>
               </div>
             </div>
           )}
 
-          {/* Navigation Buttons */}
           <div className="flex gap-2 pt-2">
-            {step > 1 && (
+            {step === 2 && (
               <button
                 type="button"
                 onClick={handleBack}
@@ -204,7 +165,7 @@ export default  function AgentsSignUpForm() {
               </button>
             )}
 
-            {step < 3 ? (
+            {step === 1 ? (
               <button
                 type="button"
                 onClick={handleNext}
@@ -218,7 +179,7 @@ export default  function AgentsSignUpForm() {
                 disabled={isSubmitting}
                 className="flex-1 h-10 rounded-md bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:bg-green-400"
               >
-                {isSubmitting ? "Creating Account..." : "Complete Registration"}
+                {isSubmitting ? "Processing..." : "Complete Registration"}
               </button>
             )}
           </div>
@@ -226,5 +187,4 @@ export default  function AgentsSignUpForm() {
       </div>
     </div>
   );
-};
-
+}
