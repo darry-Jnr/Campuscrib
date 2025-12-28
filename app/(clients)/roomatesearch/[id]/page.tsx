@@ -2,10 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Container from "@/app/components/Container";
 import BackButton from "@/app/components/BackButton";
-import { FiMapPin, FiBook, FiInfo } from "react-icons/fi";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import ContactButton from "@/app/components/ContactButton"; // Import our new component
+import { FiMapPin, FiBook, FiUser, FiInfo, FiMessageSquare } from "react-icons/fi";
 
 export default async function RoommateDetailsPage({ 
   params 
@@ -14,36 +11,29 @@ export default async function RoommateDetailsPage({
 }) {
   const { id } = await params;
   
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  // 1. Fetch the roommate profile
   const person = await prisma.profile.findUnique({
     where: { id: id },
   });
 
   if (!person) return notFound();
 
-  // 2. Fetch the logged-in user to check credits and unlocked list
-  const userProfile = session?.user?.id 
-    ? await prisma.profile.findUnique({
-        where: { userId: session.user.id },
-      })
-    : null;
-
-  // 3. Check if this profile is already in the user's unlocked list
-  const hasUnlocked = userProfile?.profilesViewed.includes(person.id) || false;
+  // 1. WhatsApp Logic: Clean the phone number and encode the message
+  const rawPhone = person.phone || "";
+  const cleanPhone = rawPhone.replace(/\D/g, ''); // Removes spaces, +, etc.
+  
+  // Custom message for FUTA/Campus context
+  const message = `Hello ${person.name}, I saw your roommate profile on CampusCrib. I'm also in ${person.dept} and looking for a place in ${person.location || 'campus'}. Can we talk?`;
+  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 
   return (
     <Container>
       <div className="pt-10 pb-32 max-w-2xl mx-auto">
         <div className="pt-16 absolute">
-          <BackButton />
-          
+        <BackButton />
         </div>
        
-        {/* HERO SECTION */}
+        
+        {/* HERO SECTION - Using your Gender & Status fields */}
         <div className="mt-8 pt-10 flex flex-col items-center">
           <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center text-4xl mb-4 border-4 border-white shadow-md">
             {person.gender === "Female" ? "👩‍🎓" : "👨‍🎓"}
@@ -58,7 +48,7 @@ export default async function RoommateDetailsPage({
           </div>
         </div>
 
-        {/* INFO GRID */}
+        {/* INFO GRID - Using your Dept, Location, Bio fields */}
         <div className="mt-10 space-y-4">
           <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
             <h3 className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
@@ -92,28 +82,23 @@ export default async function RoommateDetailsPage({
           </div>
         </div>
 
-        {/* STICKY CONNECT BUTTON - LOGIC REPLACED HERE */}
+        {/* STICKY CONNECT BUTTON */}
         <div className="fixed bottom-0 left-0 w-full p-5 bg-white/90 backdrop-blur-lg border-t border-gray-100 z-100">
           <div className="max-w-2xl mx-auto">
-            {session ? (
-              <ContactButton 
-                targetId={person.id}
-                phone={hasUnlocked ? person.phone : null}
-                hasUnlocked={hasUnlocked}
-                credits={userProfile?.credits || 0}
-                userEmail={session.user.email}
-              />
-            ) : (
+            {person.phone ? (
               <a 
-                href="/auth/login"
-                className="w-full bg-black text-white py-4 rounded-2xl font-bold flex items-center justify-center"
+                href={whatsappUrl}
+                target="_blank"
+                className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-all"
               >
-                Login to Connect
+                <FiMessageSquare />
+                Connect on WhatsApp
               </a>
+            ) : (
+              <button disabled className="w-full bg-gray-200 text-gray-400 py-4 rounded-2xl font-bold cursor-not-allowed">
+                No WhatsApp Number Provided
+              </button>
             )}
-            <p className="text-center text-[10px] text-gray-400 mt-2">
-               Connect with {person.name} directly on WhatsApp.
-            </p>
           </div>
         </div>
       </div>

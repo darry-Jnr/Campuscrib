@@ -8,21 +8,7 @@ import Input from "../inputs/Input";
 import toast from "react-hot-toast";
 
 interface ProfileModalProps {
-  initialData: {
-    id: string;
-    createdAt: Date;
-    updatedAt: Date;
-    userId: string;
-    name: string;
-    dept: string;
-    level: string;
-    gender: string | null;
-    location: string | null;
-    bio: string | null;
-    school: string | null;
-    status: string | null;
-    phone: number | null;
-  } | null;
+  initialData: any | null; // Simplified for brevity
 }
 
 const ProfileModal = ({ initialData }: ProfileModalProps) => {
@@ -36,14 +22,13 @@ const ProfileModal = ({ initialData }: ProfileModalProps) => {
     phone: "",
     gender: "",
     dept: "",
-    school: "",
+    school: "FUTA",
     level: "",
     status: "",
     location: "",
     bio: "",
   });
 
-  // Sync state when initialData changes or modal opens
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -51,7 +36,7 @@ const ProfileModal = ({ initialData }: ProfileModalProps) => {
         phone: initialData.phone?.toString() || "",
         gender: initialData.gender || "",
         dept: initialData.dept || "",
-        school: initialData.school || "",
+        school: initialData.school || "FUTA",
         level: initialData.level || "",
         status: initialData.status || "",
         location: initialData.location || "",
@@ -60,10 +45,22 @@ const ProfileModal = ({ initialData }: ProfileModalProps) => {
     }
   }, [initialData, isOpen]);
 
-  const nextStep = () => setStep((prev) => prev + 1);
+  // Validation Check: Required fields for Step 1 & Step 2
+  const isStep1Valid = formData.name.trim() !== "" && formData.phone.trim() !== "" && formData.gender !== "";
+  const isStep2Valid = formData.level !== "";
+  const canSave = isStep1Valid && isStep2Valid;
+
+  const nextStep = () => {
+    if (step === 1 && !isStep1Valid) {
+      return toast.error("Please fill Name, Phone, and Gender");
+    }
+    setStep((prev) => prev + 1);
+  };
+
   const backStep = () => setStep((prev) => prev - 1);
 
   const saveProfile = async () => {
+    if (!canSave) return toast.error("Please complete the required fields");
     setIsLoading(true);
     try {
       const res = await fetch("/api/profile", {
@@ -74,15 +71,11 @@ const ProfileModal = ({ initialData }: ProfileModalProps) => {
 
       if (!res.ok) throw new Error("Failed to save profile");
 
-      toast.success("Profile updated successfully!");
-    
-      router.refresh(); // Updates the background page data
+      toast.success("Profile fully unlocked!");
       setIsOpen(false);
-      window.location.reload()
-      setStep(1); // Reset steps for next time
+      window.location.reload();
     } catch (err) {
       toast.error("Error updating profile");
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -93,24 +86,24 @@ const ProfileModal = ({ initialData }: ProfileModalProps) => {
       {step === 1 && (
         <div className="flex flex-col gap-4">
           <Input
-            label="Full Name"
+            label="Full Name *"
             disabled={isLoading}
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
           <Input
-            label="Phone"
+            label="Phone Number *"
             disabled={isLoading}
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           />
           <div>
-            <label className="mb-2 block font-semibold text-gray-700 text-sm">Gender</label>
+            <label className="mb-2 block font-bold text-slate-800 text-xs uppercase tracking-widest">Gender *</label>
             <select
               disabled={isLoading}
               value={formData.gender}
               onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-              className="border border-gray-300 p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-70"
+              className="border border-gray-200 p-4 w-full rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all bg-gray-50"
             >
               <option value="">Select Gender</option>
               <option value="Male">Male</option>
@@ -122,31 +115,13 @@ const ProfileModal = ({ initialData }: ProfileModalProps) => {
 
       {step === 2 && (
         <div className="flex flex-col gap-4">
-          <Input
-            label="Department"
-            disabled={isLoading}
-            onChange={(e) => setFormData({ ...formData, dept: e.target.value })}
-            value={formData.dept}
-          />
-          <div>
-            <label className="mb-2 block font-semibold text-gray-700 text-sm">Select School</label>
-            <select
-              disabled={isLoading}
-              value={formData.school}
-              onChange={(e) => setFormData({ ...formData, school: e.target.value })}
-              className="border border-gray-300 p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="">Select School</option>
-              <option value="FUTA">FEDERAL UNIVERSITY OF TECHNOLOGY AKURE</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-2 block font-semibold text-gray-700 text-sm">Level</label>
+           <div>
+            <label className="mb-2 block font-bold text-slate-800 text-xs uppercase tracking-widest">Level *</label>
             <select
               disabled={isLoading}
               value={formData.level}
               onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-              className="border border-gray-300 p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="border border-gray-200 p-4 w-full rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-gray-50"
             >
               <option value="">Select Level</option>
               <option value="100">100 Level</option>
@@ -156,13 +131,19 @@ const ProfileModal = ({ initialData }: ProfileModalProps) => {
               <option value="500">500 Level</option>
             </select>
           </div>
+          <Input
+            label="Department (Optional)"
+            disabled={isLoading}
+            onChange={(e) => setFormData({ ...formData, dept: e.target.value })}
+            value={formData.dept}
+          />
           <div>
-            <label className="mb-2 block font-semibold text-gray-700 text-sm">Status</label>
+            <label className="mb-2 block font-bold text-slate-800 text-xs uppercase tracking-widest">Status (Optional)</label>
             <select
               disabled={isLoading}
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="border border-gray-300 p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="border border-gray-200 p-4 w-full rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-gray-50"
             >
               <option value="">Set Status</option>
               <option value="Looking">Looking for Apartment & Roomate</option>
@@ -176,28 +157,29 @@ const ProfileModal = ({ initialData }: ProfileModalProps) => {
       {step === 3 && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-gray-700">Preferred Location</label>
-      <select
-        disabled={isLoading}
-        value={formData.location}
-        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-        className="w-full p-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-gray-800"
-      >
-        <option value="" disabled>Where do you prefer to live?</option>
-        <option value="North Gate">North Gate</option>
-        <option value="South Gate">South Gate</option>
-        <option value="West Gate">West Gate</option>
-        <option value="Anywhere">Anywhere / Not sure</option>
-      </select>
-    </div>
+            <label className="text-xs font-bold text-slate-800 uppercase tracking-widest">Preferred Area (Optional)</label>
+            <select
+              disabled={isLoading}
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all text-gray-800"
+            >
+              <option value="">Where do you prefer to live?</option>
+              <option value="North Gate">North Gate</option>
+              <option value="South Gate">South Gate</option>
+              <option value="West Gate">West Gate</option>
+              <option value="Anywhere">Anywhere / Not sure</option>
+            </select>
+          </div>
           <div>
-            <label className="mb-2 block font-semibold text-gray-700 text-sm">Bio</label>
+            <label className="mb-2 block font-bold text-slate-800 text-xs uppercase tracking-widest">Bio (Optional)</label>
             <textarea
               disabled={isLoading}
+              placeholder="Tell others a bit about your lifestyle..."
               rows={4}
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              className="border border-gray-300 p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 resize-none disabled:opacity-70"
+              className="border border-gray-200 p-4 w-full rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-gray-50 resize-none"
             ></textarea>
           </div>
         </div>
@@ -206,40 +188,54 @@ const ProfileModal = ({ initialData }: ProfileModalProps) => {
   );
 
   const footer = (
-    <div className="flex flex-row items-center gap-4 w-full">
+    <div className="flex flex-row items-center gap-4 w-full mt-4">
       {step > 1 && (
-        <Button 
-          disabled={isLoading}
-          label="Back" 
-          onClick={backStep} 
-          outline 
-        />
+        <button 
+          onClick={backStep}
+          className="flex-1 py-4 border-2 border-slate-100 rounded-2xl font-bold text-slate-500 hover:bg-gray-50 transition-all"
+        >
+          Back
+        </button>
       )}
-      {step < 3 && (
-        <Button 
-          disabled={isLoading}
-          label="Next" 
-          onClick={nextStep} 
-          outline
-        />
+      {step < 3 ? (
+        <button 
+          onClick={nextStep}
+          className={`flex-1 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all ${
+            isStep1Valid ? "bg-slate-900 text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+          }`}
+        >
+          Next Step
+        </button>
+      ) : (
+        <button 
+          onClick={saveProfile}
+          disabled={!canSave || isLoading}
+          className={`flex-1 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all ${
+            canSave ? "bg-green-600 text-white shadow-lg shadow-green-100" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+          }`}
+        >
+          {isLoading ? "Saving..." : "Finish & Unlock"}
+        </button>
       )}
     </div>
   );
 
   return (
     <>
-      <Button
-        label="Edit Profile"
-        outline
+      <button 
         onClick={() => setIsOpen(true)}
-      />
+        className=" px-3 bg-slate-900 text-white py-3 rounded-lg font-black text-sm uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95"
+      >
+        Update Profile
+      </button>
+
       <Modal
         disabled={isLoading}
-        title="Student Profile"
+        title="Complete Your Setup"
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onSubmit={saveProfile}
-        actionLabel={isLoading ? "Saving..." : "Save Profile"}
+        actionLabel={isLoading ? "Saving..." : "Finish & Unlock"}
         body={body}
         footer={footer}
       />
