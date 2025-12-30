@@ -1,54 +1,47 @@
 'use client';
 
 import Link from "next/link";
-import { FiHome, FiUpload, FiClock, FiSettings, FiLogOut } from "react-icons/fi";
-import { type IconType } from "react-icons";
-import { FiX } from "react-icons/fi";
+import { usePathname } from "next/navigation";
+import { FiGrid, FiPlusCircle, FiList, FiUser, FiLogOut } from "react-icons/fi";
 
-
-interface SidebarProps {
-  isVisible: boolean;
-  onClose: () => void;
-}
-
-const navItems: { label: string; icon: IconType; url: string }[] = [
-  { label: "Dashboard", icon: FiHome, url: "/agents" },
-  { label: "Upload House", icon: FiUpload, url: "/agents/upload" },
-  { label: "History", icon: FiClock, url: "/agents/history" },
-  { label: "Settings", icon: FiSettings, url: "/agents/settings" },
-  { label: "Logout", icon: FiLogOut, url: "/agents/logout" },
+const navLinks = [
+  { label: "Dashboard", icon: FiGrid, href: "/agents/dashboard" },
+  { label: "Upload", icon: FiPlusCircle, href: "/agents/upload" },
+  { label: "History", icon: FiList, href: "/agents/history" },
+  { label: "Profile", icon: FiUser, href: "/agents/profile" },
 ];
 
+export default function Sidebar() {
+  const pathname = usePathname();
 
-
-const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
   return (
-    <aside
-      className={`
-        fixed top-0 left-0 h-full z-40 bg-white shadow-xl p-4 transition-all duration-300 ease-in-out
-        w-52  md:w-64
-        ${isVisible ? 'md:translate-x-0 ' : 'md:-translate-x-full '}
-         ${isVisible ? 'translate-x-0 ' : '-translate-x-full '}
-      `}
-    >
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-100 hidden lg:flex flex-col p-6 z-50">
+      <div className="mb-12 px-4">
+        <h2 className="text-2xl font-black italic tracking-tighter uppercase">Campus<span className="text-green-500">Crib</span></h2>
+      </div>
 
-      <nav className="flex flex-col gap-3 pt-8">
-
-      <FiX size={24} onClick={onClose} className="text-gray-700 cursor-pointer" />
-        {navItems.map((item) => (
-          <Link
-            key={item.label}
-            href={item.url}
-            onClick={onClose}
-            className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded"
-          >
-            <item.icon size={20} />
-            <span className="text-gray-700 font-medium">{item.label}</span>
-          </Link>
-        ))}
+      <nav className="flex-1 space-y-2">
+        {navLinks.map((link) => {
+          const isActive = pathname === link.href;
+          return (
+            <Link 
+              key={link.href} 
+              href={link.href}
+              className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${
+                isActive ? 'bg-black text-white shadow-xl shadow-slate-200 scale-105' : 'text-slate-400 hover:bg-slate-50'
+              }`}
+            >
+              <link.icon size={18} />
+              {link.label}
+            </Link>
+          );
+        })}
       </nav>
+
+      <button className="flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest text-red-500 hover:bg-red-50 transition-all">
+        <FiLogOut size={18} />
+        Logout
+      </button>
     </aside>
   );
-};
-
-export default Sidebar;
+}
