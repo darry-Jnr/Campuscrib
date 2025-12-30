@@ -111,6 +111,8 @@ model Listing {
   water        Boolean? @default(false)
   security     Boolean? @default(false)
   solar        Boolean? @default(false)
+  isPublished  Boolean  @default(true)
+  views        Int      @default(0)
   // Relations
   agent        User     @relation(fields: [agentId], references: [id], onDelete: Cascade)
   agentId      String
