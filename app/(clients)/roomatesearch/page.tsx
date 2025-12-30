@@ -1,5 +1,5 @@
 import Container from "@/app/components/Container";
-import OnboardingBanner from "@/app/components/OnboardingBanner";
+// import OnboardingBanner from "@/app/components/OnboardingBanner";
 import Wrapper from "./Wrapper";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -56,9 +56,9 @@ export default async function Page({
       {/* Delayed Modal: Only triggers for logged-in users with missing essentials */}
       <ProfileLockModal isComplete={!shouldShowLock} />
 
-      <div className="block md:hidden">
+      {/* <div className="block md:hidden">
         <OnboardingBanner />
-      </div>
+      </div> */}
 
       <Container>
         <div className="pt-24 pb-20">

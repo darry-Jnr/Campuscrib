@@ -6,6 +6,9 @@ import { prisma } from "@/lib/prisma";
 
 export default async function Card() {
   const cardData = await prisma.listing.findMany({
+    where: {
+      isPublished: true, 
+    },
     orderBy: { createdAt: 'desc' }
   });
 

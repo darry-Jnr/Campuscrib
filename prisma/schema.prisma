@@ -105,8 +105,10 @@ model Listing {
   description  String?  @db.Text
   imageUrls    String[] // Array of strings for multiple photos
   videoUrl     String // Optional video tour
+  views       Int      @default(0) // Add this line
   approved     Boolean  @default(true)
   hasFence     Boolean? @default(false)
+  isPublished  Boolean? @default(true)
   electricity  Boolean? @default(false)
   water        Boolean? @default(false)
   security     Boolean? @default(false)

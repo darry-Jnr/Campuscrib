@@ -12,7 +12,7 @@ export default function ProfileLockModal({ isComplete }: { isComplete: boolean }
     if (!isComplete) {
       const timer = setTimeout(() => {
         setIsVisible(true);
-      }, 2000); // 2 Seconds delay
+      }, 1000); // 2 Seconds delay
 
       return () => clearTimeout(timer);
     }
