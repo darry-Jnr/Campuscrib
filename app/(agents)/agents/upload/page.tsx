@@ -223,8 +223,8 @@ export default function ListingUploadForm() {
                   {errors.mainLocation && <p className="mt-1 text-sm text-red-500">{errors.mainLocation.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Street Name <span className="text-red-500">*</span></label>
-                  <input type="text" {...register("streetName", { required: "Street name is required" })} placeholder="e.g., Ibikunle Street" className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none" />
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Apartment Type<span className="text-red-500">*</span></label>
+                  <input type="text" {...register("streetName", { required: "Type is required" })} placeholder="e.g., Self con" className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none" />
                   {errors.streetName && <p className="mt-1 text-sm text-red-500">{errors.streetName.message}</p>}
                 </div>
                 <div>
