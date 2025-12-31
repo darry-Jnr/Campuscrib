@@ -189,7 +189,7 @@ export default function ListingUploadForm({ initialData, onSuccess }: { initialD
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-black uppercase text-slate-400 ml-1">Street Name</label>
+                  <label className="text-xs font-black uppercase text-slate-400 ml-1">Apartment type</label>
                   <input {...register("streetName", { required: true })} className="w-full px-4 py-4 rounded-2xl bg-slate-50 border-none outline-none font-bold" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
