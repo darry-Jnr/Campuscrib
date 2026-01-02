@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   description:
     "Campus Crib helps students find verified off-campus housing easily. Browse available houses, connect with trusted agents, and secure accommodation faster.",
-  manifest:"/images/favicon.jpg",
+  manifest:"/site.webmanifest",
   keywords: [
     "Campus Crib",
     "student housing Nigeria",
